@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yoga y Emociones – Yoga para niños y adolescentes</title>
+  <meta name="description" content="Clases de yoga y educación emocional para niños de 4 a 12 años y adolescentes de 12 a 15 años. Con Carina Saharrea.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            teal:   '#1BBCB7',
+            coral:  '#F07B6A',
+            orange: '#F5A623',
+            pink:   '#F06A8E',
+            blue:   '#2D6BBE',
+            bg:     '#F0F7F9',
+          },
+          fontFamily: { sans: ['Nunito', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;font-family:'Nunito',sans-serif}
+    body{background:#F0F7F9;color:#222}
+
+    /* Fade-in-up animation */
+    .fiu{opacity:0;transform:translateY(36px);transition:opacity .7s ease,transform .7s ease}
+    .fiu.vis{opacity:1;transform:translateY(0)}
+    .fiu-d1{transition-delay:.1s}
+    .fiu-d2{transition-delay:.2s}
+    .fiu-d3{transition-delay:.3s}
+    .fiu-d4{transition-delay:.4s}
+    .fiu-d5{transition-delay:.5s}
+    .fiu-d6{transition-delay:.6s}
+
+    /* Floating particles */
+    @keyframes floatUp{0%,100%{transform:translateY(0) rotate(0deg) scale(1)}50%{transform:translateY(-22px) rotate(180deg) scale(1.1)}}
+    .particle{animation:floatUp ease-in-out infinite}
+
+    /* Nav underline hover */
+    .nav-a{position:relative}
+    .nav-a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:2px;background:#1BBCB7;transition:width .3s}
+    .nav-a:hover::after{width:100%}
+
+    /* Card lift */
+    .lift{transition:transform .3s,box-shadow .3s}
+    .lift:hover{transform:translateY(-6px);box-shadow:0 24px 48px rgba(0,0,0,.13)}
+
+    /* Gallery zoom */
+    .gal-inner{transition:transform .4s ease}
+    .gal-wrap:hover .gal-inner{transform:scale(1.07)}
+
+    /* WhatsApp pulse */
+    @keyframes waPulse{0%{box-shadow:0 0 0 0 rgba(37,211,102,.6)}70%{box-shadow:0 0 0 14px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
+    .wa-btn{animation:waPulse 2.2s infinite}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ─── Intersection Observer hook ─────────────────────────────────────── */
+function useFadeIn() {
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); }),
+      { threshold: 0.1 }
+    );
+    document.querySelectorAll('.fiu').forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+}
+
+/* ─── Logo SVG ────────────────────────────────────────────────────────── */
+const Logo = ({ size = 72, white = false }) => (
+  <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Logo Yoga y Emociones">
+    <circle cx="50" cy="17" r="9" fill={white ? 'white' : '#2D6BBE'} />
+    <path d="M50 70 C30 55 21 42 21 34 C21 26 27 21 35 21 C40 21 45 25 50 31 C55 25 60 21 65 21 C73 21 79 26 79 34 C79 42 70 55 50 70Z"
+      fill={white ? 'white' : 'url(#hg)'} />
+    <ellipse cx="34" cy="81" rx="18" ry="10" fill={white ? 'white' : 'url(#lg)'} />
+    <ellipse cx="66" cy="81" rx="18" ry="10" fill={white ? 'white' : 'url(#rg)'} />
+    <ellipse cx="50" cy="83" rx="12" ry="7" fill={white ? 'white' : '#1BBCB7'} />
+    {!white && (
+      <defs>
+        <linearGradient id="hg" x1="21" y1="21" x2="79" y2="70" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#F5A623"/><stop offset="100%" stopColor="#F06A8E"/>
+        </linearGradient>
+        <linearGradient id="lg" x1="16" y1="76" x2="52" y2="86" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#2D6BBE"/><stop offset="100%" stopColor="#1BBCB7"/>
+        </linearGradient>
+        <linearGradient id="rg" x1="48" y1="76" x2="84" y2="86" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#1BBCB7"/><stop offset="100%" stopColor="#2D6BBE"/>
+        </linearGradient>
+      </defs>
+    )}
+  </svg>
+);
+
+/* ─── Navbar ──────────────────────────────────────────────────────────── */
+function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', h);
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+  const links = [
+    ['#inicio','Inicio'],['#nosotros','Nosotros'],['#clases','Clases'],
+    ['#galeria','Galería'],['#testimonios','Testimonios'],['#contacto','Contacto'],
+  ];
+  return (
+    <nav className={`fixed top-0 inset-x-0 z-50 px-5 py-3 flex items-center justify-between transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur shadow-md' : 'bg-transparent'}`}>
+      <a href="#inicio" className="flex items-center gap-2">
+        <Logo size={38} />
+        <span className="font-extrabold text-teal text-base hidden sm:block leading-tight">Yoga y Emociones</span>
+      </a>
+      {/* Desktop */}
+      <div className="hidden md:flex items-center gap-5">
+        {links.map(([h,l]) => (
+          <a key={h} href={h} className="nav-a text-sm font-semibold text-[#333] hover:text-teal transition-colors">{l}</a>
+        ))}
+        <a href="https://wa.me/543583487539?text=Hola%20Carina!%20Quiero%20inscribirme%20en%20Yoga%20y%20Emociones%20%F0%9F%8C%BF"
+          target="_blank" rel="noopener"
+          className="bg-coral text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-[#d96050] transition-colors shadow">
+          Inscribirse
+        </a>
+      </div>
+      {/* Hamburger */}
+      <button onClick={() => setOpen(!open)} className="md:hidden p-2 rounded-lg focus:outline-none" aria-label="Menú">
+        <span className={`block w-6 h-0.5 bg-[#333] mb-1.5 transition-all origin-center ${open ? 'rotate-45 translate-y-2' : ''}`}/>
+        <span className={`block w-6 h-0.5 bg-[#333] mb-1.5 transition-all ${open ? 'opacity-0' : ''}`}/>
+        <span className={`block w-6 h-0.5 bg-[#333] transition-all origin-center ${open ? '-rotate-45 -translate-y-2' : ''}`}/>
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 right-0 bg-white/98 backdrop-blur shadow-xl py-4 px-6 flex flex-col gap-3 md:hidden border-t border-gray-100">
+          {links.map(([h,l]) => (
+            <a key={h} href={h} onClick={() => setOpen(false)} className="text-sm font-semibold text-[#333] hover:text-teal py-1 transition-colors">{l}</a>
+          ))}
+          <a href="https://wa.me/543583487539" target="_blank" rel="noopener"
+            className="bg-coral text-white px-4 py-2.5 rounded-full text-sm font-bold text-center mt-1">
+            💚 Inscribirse
+          </a>
+        </div>
+      )}
+    </nav>
+  );
+}
+
+/* ─── Hero ────────────────────────────────────────────────────────────── */
+function Hero() {
+  const pts = [
+    {s:13,x:'8%',y:'22%',d:'6.5s',dl:'0s',c:'#F07B6A'},
+    {s:9,x:'88%',y:'14%',d:'8s',dl:'1s',c:'#F5A623'},
+    {s:17,x:'78%',y:'72%',d:'7s',dl:'2s',c:'#F06A8E'},
+    {s:11,x:'18%',y:'78%',d:'9s',dl:'.5s',c:'#2D6BBE'},
+    {s:7,x:'92%',y:'48%',d:'5.5s',dl:'3s',c:'#1BBCB7'},
+    {s:15,x:'4%',y:'56%',d:'8s',dl:'1.5s',c:'#F5A623'},
+    {s:10,x:'48%',y:'88%',d:'6s',dl:'2.5s',c:'#F07B6A'},
+    {s:8,x:'62%',y:'8%',d:'7.5s',dl:'4s',c:'#F06A8E'},
+    {s:12,x:'35%',y:'6%',d:'9s',dl:'.8s',c:'#1BBCB7'},
+  ];
+  return (
+    <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{background:'linear-gradient(135deg,#1BBCB7 0%,#2D6BBE 55%,#1a9eb9 100%)'}}>
+      {pts.map((p,i) => (
+        <div key={i} className="particle absolute rounded-full opacity-25 pointer-events-none"
+          style={{width:p.s,height:p.s,left:p.x,top:p.y,background:p.c,animationDuration:p.d,animationDelay:p.dl}}/>
+      ))}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-white opacity-[.06] -translate-y-1/2 translate-x-1/2 pointer-events-none"/>
+      <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-white opacity-[.06] translate-y-1/2 -translate-x-1/2 pointer-events-none"/>
+
+      <div className="relative z-10 text-center px-6 max-w-2xl mx-auto pt-24 pb-32">
+        <div className="flex justify-center mb-7">
+          <div style={{filter:'drop-shadow(0 8px 24px rgba(0,0,0,.25))'}}>
+            <Logo size={130} />
+          </div>
+        </div>
+        <h1 className="text-5xl md:text-7xl font-black text-white mb-4 leading-[1.1] tracking-tight">
+          Yoga y Emociones
+        </h1>
+        <p className="text-xl md:text-2xl text-white/90 font-bold mb-4">
+          Un espacio para crear, jugar y expresarse 🌿
+        </p>
+        <p className="text-base md:text-lg text-white/75 mb-10 leading-relaxed">
+          Yoga y educación emocional para niños y niñas de 4 a 12 años<br className="hidden sm:block"/>
+          y adolescentes de 12 a 15 años
+        </p>
+        <a href="https://wa.me/543583487539?text=Hola%20Carina!%20Quiero%20inscribir%20a%20mi%20hijo%2Fa%20en%20Yoga%20y%20Emociones%20%F0%9F%8C%BF"
+          target="_blank" rel="noopener"
+          className="inline-flex items-center gap-2 bg-coral text-white text-lg font-extrabold px-9 py-4 rounded-full shadow-2xl hover:bg-[#d96050] hover:scale-105 transition-all duration-300">
+          💚 Quiero inscribirme
+        </a>
+      </div>
+
+      <div className="absolute bottom-0 inset-x-0 pointer-events-none">
+        <svg viewBox="0 0 1440 90" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" className="w-full">
+          <path d="M0 45 C400 90 1040 0 1440 45 L1440 90 L0 90Z" fill="#F0F7F9"/>
+        </svg>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Quiénes Somos ───────────────────────────────────────────────────── */
+function QuienesSomos() {
+  return (
+    <section id="nosotros" className="py-24 bg-white">
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="flex flex-col md:flex-row items-center gap-14">
+          {/* Photo */}
+          <div className="fiu flex-shrink-0">
+            <div className="relative w-72 h-80 md:w-80 md:h-96 rounded-[2rem] overflow-hidden shadow-2xl">
+              <img src="images/foto-carina.jpg" alt="Carina Saharrea" className="w-full h-full object-cover" />
+              <div className="absolute -bottom-6 -right-6 w-28 h-28 rounded-full bg-coral opacity-30"/>
+              <div className="absolute -top-5 -left-5 w-20 h-20 rounded-full bg-orange opacity-25"/>
+            </div>
+          </div>
+          {/* Text */}
+          <div>
+            <p className="fiu text-teal font-bold text-xs uppercase tracking-[.18em] mb-3">Quiénes somos</p>
+            <h2 className="fiu fiu-d1 text-4xl md:text-5xl font-black text-[#222] mb-5 leading-tight">
+              Hola, soy <span className="text-teal">Carina</span> 🌸
+            </h2>
+            <p className="fiu fiu-d2 text-gray-500 text-lg leading-relaxed mb-4">
+              Soy Carina Saharrea, maestra jardinera, psicopedagoga y profesora de yoga especializada en niños, niñas y adolescentes.
+              Mi recorrido siempre estuvo ligado a acompañar infancias y adolescencias en su desarrollo.
+            </p>
+            <p className="fiu fiu-d3 text-gray-500 text-lg leading-relaxed mb-4">
+              Con el tiempo, encontré en el yoga una herramienta valiosa para sumar a ese camino: un espacio donde el cuerpo,
+              las emociones y el juego se integran de manera natural. Creo profundamente que el yoga es mucho más que posturas:
+              es una forma de ayudar a chicos y chicas a conocerse, a gestionar lo que sienten y a desarrollar mayor confianza en sí mismos.
+            </p>
+            <p className="fiu fiu-d4 text-gray-500 text-lg leading-relaxed mb-7">
+              En cada clase combinamos movimiento, respiración, juego y creatividad para generar un espacio cuidado,
+              donde cada uno pueda expresarse con libertad y ser quien es. 💛
+            </p>
+            <div className="fiu fiu-d5 flex flex-wrap gap-2">
+              {['Yoga infantil','Yoga adolescentes','Educación emocional','Mindfulness'].map(t => (
+                <span key={t} className="bg-[#E8F9F9] text-teal text-sm font-bold px-4 py-1.5 rounded-full">{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Clases ──────────────────────────────────────────────────────────── */
+function Clases() {
+  const cards = [
+    {
+      title:'Yoga Niños', age:'4 a 12 años', emoji:'🌈',
+      color:'#1BBCB7', light:'#E8F9F9',
+      desc:'Un espacio lúdico y creativo donde los más chiquitos descubren el yoga a través del juego, los cuentos y la imaginación. Cada clase es una aventura nueva.',
+      items:['🧘 Posturas de yoga divertidas','🌬️ Ejercicios de respiración','🎭 Expresión corporal y movimiento','🌊 Relajación y visualizaciones guiadas','🎵 Canciones y música','🎨 Manualidades y creatividad','📖 Cuentos y meditaciones']
+    },
+    {
+      title:'Yoga Adolescentes', age:'12 a 15 años', emoji:'✨',
+      color:'#2D6BBE', light:'#EEF3FC',
+      desc:'Un lugar de encuentro donde el yoga se vuelve herramienta para gestionar el estrés, las emociones y el cuerpo en transformación, con un enfoque respetuoso y sin juicios.',
+      items:['🧘 Secuencias de yoga adaptadas','🌬️ Técnicas de respiración y calma','💪 Conciencia corporal y postura','😌 Manejo del estrés y la ansiedad','💬 Expresión y gestión emocional','🔮 Meditación y mindfulness','🤝 Dinámica grupal y vínculos']
+    },
+  ];
+  return (
+    <section id="clases" className="py-24" style={{background:'#E8F9F9'}}>
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <p className="fiu text-teal font-bold text-xs uppercase tracking-[.18em] mb-3">Nuestra propuesta</p>
+          <h2 className="fiu fiu-d1 text-4xl md:text-5xl font-black text-[#222] mb-4">Clases para cada etapa 🌱</h2>
+          <p className="fiu fiu-d2 text-gray-500 text-lg max-w-md mx-auto">Cada grupo tiene su ritmo, su lenguaje y su magia propia.</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-8">
+          {cards.map((c,i) => (
+            <div key={c.title} className={`fiu fiu-d${i+2} lift bg-white rounded-3xl shadow-lg overflow-hidden`}>
+              <div className="p-8">
+                <div className="flex items-center gap-4 mb-5">
+                  <span className="text-5xl">{c.emoji}</span>
+                  <div>
+                    <h3 className="text-2xl font-extrabold leading-tight" style={{color:c.color}}>{c.title}</h3>
+                    <span className="text-sm font-semibold text-gray-400">{c.age}</span>
+                  </div>
+                </div>
+                <p className="text-gray-500 leading-relaxed mb-6 text-[15px]">{c.desc}</p>
+                <div className="rounded-2xl p-5" style={{background:c.light}}>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{color:c.color}}>¿Qué trabajamos?</p>
+                  <ul className="space-y-2">
+                    {c.items.map(it => (
+                      <li key={it} className="text-sm text-gray-600 font-medium">{it}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <div className="h-1.5" style={{background:`linear-gradient(90deg,${c.color},${c.color}66)`}}/>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Galería ─────────────────────────────────────────────────────────── */
+function Galeria() {
+  const items = [
+    {src:'images/postura-1.jpg',        label:'Clase de yoga'},
+    {src:'images/respiración-2.jpg',    label:'Momento de respiración'},
+    {src:'images/mandalas-1.jpg',       label:'Manualidades'},
+    {src:'images/relajación-1.jpg',     label:'Relajación'},
+    {src:'images/juegos-1.jpg',         label:'Juego y movimiento'},
+    {src:'images/IMG_20260107_103448011_HDR.jpg', label:'Cuentos y meditación'},
+  ];
+  return (
+    <section id="galeria" className="py-24 bg-white">
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <p className="fiu text-teal font-bold text-xs uppercase tracking-[.18em] mb-3">Galería</p>
+          <h2 className="fiu fiu-d1 text-4xl md:text-5xl font-black text-[#222] mb-4">Momentos especiales 📸</h2>
+          <p className="fiu fiu-d2 text-gray-500 text-lg">Cada clase es única. Cada sonrisa, un logro.</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {items.map((it,i) => (
+            <div key={i} className={`fiu fiu-d${Math.min(i+1,6)} gal-wrap aspect-square rounded-2xl overflow-hidden cursor-pointer shadow-md relative`}>
+              <img src={it.src} alt={it.label} className="gal-inner w-full h-full object-cover" />
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                <p className="text-white font-bold text-sm text-center drop-shadow">{it.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Testimonios ─────────────────────────────────────────────────────── */
+function Testimonios() {
+  const [cur, setCur] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [dragStart, setDragStart] = useState(0);
+  const timerRef = useRef(null);
+
+  const list = [
+    {
+      txt:'Mi hija Francina de 5 años va a yoga desde hace 2 años y la experiencia es muy positiva. Una de las cosas más lindas que aprendió es a relajarse para dormir: pone su música de yoga y en pocos minutos se duerme sola. Una actividad hermosa que les ayuda a relajarse desde chiquitos.',
+      name:'Analía Petribiasi', role:'Mamá de Francina, 5 años', init:'AP', color:'#1BBCB7',
+    },
+    {
+      txt:'Mi hija se llama Juliana y le encanta ir a yoga. Disminuye sus niveles de ansiedad y la ayuda a conectar con sus emociones.',
+      name:'Olga Gaitán', role:'Mamá de Juliana', init:'OG', color:'#F07B6A',
+    },
+    {
+      txt:'Mi hija Pilar, de 7 años, ama su clase de Yoga. No falta nunca, porque es su momento preferido de la semana. No solo le ayuda a estar más tranquila, sino que comienza a conocer los rituales que le hacen bien (¡y hasta nos enseña sus técnicas en casa! ☺️).',
+      name:'Lorena López', role:'Mamá de Pilar, 7 años', init:'LL', color:'#2D6BBE',
+    },
+    {
+      txt:'Soy mamá de Alfonsina de 7 años, ella está feliz de comenzar su tercer año en Yoga con la seño Cari ❤️ Cuando le pregunté qué le gusta me dijo que TODO: meditar, bailar, dibujar, relajar... Como papás nos encanta que asista porque aprenden a relajarse y lograr la calma cuando es necesario.',
+      name:'Ana Paula Croatto', role:'Mamá de Alfonsina, 7 años', init:'AC', color:'#F06A8E',
+    },
+    {
+      txt:'A mi hijo le gusta el taller de yoga y emociones porque es un espacio donde se siente cómodo, contenido y libre para expresarse. A través del movimiento, la respiración y los juegos, logra relajarse y conectarse con lo que siente. Además, disfruta compartir con otros niños en un ambiente respetuoso, lo que fortalece su confianza y bienestar.',
+      name:'Stefania Lezana', role:'Mamá de Julián', init:'SL', color:'#F5A623',
+    },
+  ];
+
+  const total = list.length;
+  const prev = () => { resetTimer(); setCur(c => (c - 1 + total) % total); };
+  const next = () => { resetTimer(); setCur(c => (c + 1) % total); };
+
+  function resetTimer() {
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setCur(c => (c + 1) % total), 5000);
+  }
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => setCur(c => (c + 1) % total), 5000);
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  // touch/drag swipe
+  const onPointerDown = (e) => { setDragging(true); setDragStart(e.clientX); };
+  const onPointerUp   = (e) => {
+    if (!dragging) return;
+    setDragging(false);
+    const diff = dragStart - e.clientX;
+    if (Math.abs(diff) > 50) diff > 0 ? next() : prev();
+  };
+
+  return (
+    <section id="testimonios" className="py-24 bg-bg overflow-hidden">
+      <div className="max-w-3xl mx-auto px-6">
+        <div className="text-center mb-14 fiu">
+          <p className="text-teal font-bold text-xs uppercase tracking-[.18em] mb-3">Testimonios</p>
+          <h2 className="text-4xl md:text-5xl font-black text-[#222] mb-4">Lo que dicen las familias ❤️</h2>
+        </div>
+
+        {/* Slider */}
+        <div className="relative fiu fiu-d1"
+          onPointerDown={onPointerDown} onPointerUp={onPointerUp} style={{touchAction:'pan-y',userSelect:'none'}}>
+
+          {/* Card */}
+          <div className="bg-white rounded-3xl p-8 md:p-10 shadow-lg border-t-4 min-h-[260px] flex flex-col justify-between transition-all duration-300"
+            style={{borderColor: list[cur].color}}>
+            <div>
+              <div className="text-6xl font-black leading-none mb-4" style={{color: list[cur].color + '22'}}>"</div>
+              <p className="text-gray-500 leading-relaxed text-[15px] md:text-base">{list[cur].txt}</p>
+            </div>
+            <div className="flex items-center gap-3 mt-8">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-md"
+                style={{background: list[cur].color}}>
+                {list[cur].init}
+              </div>
+              <div>
+                <p className="font-bold text-[#222] text-sm">{list[cur].name}</p>
+                <p className="text-gray-400 text-xs">{list[cur].role}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Prev / Next arrows */}
+          <button onClick={prev} aria-label="Anterior"
+            className="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <button onClick={next} aria-label="Siguiente"
+            className="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Dots */}
+        <div className="flex items-center justify-center gap-2 mt-7">
+          {list.map((_,i) => (
+            <button key={i} onClick={() => { resetTimer(); setCur(i); }} aria-label={`Testimonio ${i+1}`}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: cur === i ? 24 : 8,
+                height: 8,
+                background: cur === i ? list[i].color : '#CBD5E1',
+              }}/>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Contacto ────────────────────────────────────────────────────────── */
+function Contacto() {
+  const WaIcon = () => (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+    </svg>
+  );
+  const IgIcon = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+    </svg>
+  );
+  return (
+    <section id="contacto" className="py-28 relative overflow-hidden"
+      style={{background:'linear-gradient(135deg,#F07B6A 0%,#F06A8E 100%)'}}>
+      <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-white opacity-10 -translate-y-1/3 translate-x-1/3 pointer-events-none"/>
+      <div className="absolute bottom-0 left-0 w-56 h-56 rounded-full bg-white opacity-10 translate-y-1/3 -translate-x-1/3 pointer-events-none"/>
+
+      {/* Wave top */}
+      <div className="absolute top-0 inset-x-0 pointer-events-none" style={{transform:'scaleY(-1)'}}>
+        <svg viewBox="0 0 1440 70" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" className="w-full">
+          <path d="M0 35 C400 70 1040 0 1440 35 L1440 0 L0 0Z" fill="#F0F7F9"/>
+        </svg>
+      </div>
+
+      <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
+        <p className="fiu text-white/80 font-bold text-xs uppercase tracking-[.18em] mb-4">Inscripciones abiertas</p>
+        <h2 className="fiu fiu-d1 text-4xl md:text-5xl font-black text-white mb-6 leading-tight">
+          ¿Querés que tu hijo/a<br/>empiece a practicar? 🌟
+        </h2>
+        <p className="fiu fiu-d2 text-white/90 text-lg leading-relaxed mb-3">
+          Las inscripciones están abiertas para niños y niñas de <strong>4 a 12 años</strong>
+          {' '}y adolescentes de <strong>12 a 15 años</strong>.
+        </p>
+        <p className="fiu fiu-d3 text-white/75 text-base mb-10">
+          Consultá horarios, días disponibles y toda la info que necesitás.
+        </p>
+        <a href="https://wa.me/543583487539?text=Hola%20Carina!%20Quiero%20inscribir%20a%20mi%20hijo%2Fa%20en%20Yoga%20y%20Emociones%20%F0%9F%8C%BF"
+          target="_blank" rel="noopener"
+          className="fiu fiu-d4 inline-flex items-center gap-3 bg-white text-coral font-extrabold text-lg px-9 py-4 rounded-full shadow-2xl hover:scale-105 transition-all duration-300 mb-6">
+          <span className="text-[#25D366]"><WaIcon/></span>
+          Escribir a Carina → 3583 487539
+        </a>
+        <div className="fiu fiu-d5 flex items-center justify-center gap-2 text-white/90 font-semibold">
+          <IgIcon/>
+          <a href="https://instagram.com/yoga.emociones" target="_blank" rel="noopener"
+            className="hover:underline hover:text-white transition-colors">
+            @yoga.emociones
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Footer ──────────────────────────────────────────────────────────── */
+function Footer() {
+  const WaIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+    </svg>
+  );
+  const IgIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+    </svg>
+  );
+  return (
+    <footer className="bg-[#222] text-white py-14 px-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex items-center gap-4">
+            <Logo size={48} white />
+            <div>
+              <p className="font-extrabold text-lg">Yoga y Emociones</p>
+              <p className="text-gray-400 text-sm">Yoga para niños y adolescentes</p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-5 text-sm text-gray-300">
+            <a href="https://instagram.com/yoga.emociones" target="_blank" rel="noopener"
+              className="flex items-center gap-2 hover:text-teal transition-colors">
+              <IgIcon/> @yoga.emociones
+            </a>
+            <a href="https://wa.me/543583487539" target="_blank" rel="noopener"
+              className="flex items-center gap-2 hover:text-[#25D366] transition-colors">
+              <WaIcon/> 3583 487539
+            </a>
+          </div>
+        </div>
+        <div className="border-t border-gray-700 mt-8 pt-6 text-center">
+          <p className="text-gray-600 text-xs">© 2025 Yoga y Emociones · Hecho con 💚 para los niños y niñas</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ─── WhatsApp Float ──────────────────────────────────────────────────── */
+function WAFloat() {
+  return (
+    <a href="https://wa.me/543583487539?text=Hola%20Carina!%20Quiero%20saber%20más%20sobre%20Yoga%20y%20Emociones%20%F0%9F%8C%BF"
+      target="_blank" rel="noopener" aria-label="WhatsApp"
+      className="wa-btn fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+      style={{background:'#25D366'}}>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+      </svg>
+    </a>
+  );
+}
+
+/* ─── App ─────────────────────────────────────────────────────────────── */
+function App() {
+  useFadeIn();
+  return (
+    <>
+      <Navbar/>
+      <Hero/>
+      <QuienesSomos/>
+      <Clases/>
+      <Galeria/>
+      <Testimonios/>
+      <Contacto/>
+      <Footer/>
+      <WAFloat/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
